@@ -1,4 +1,14 @@
-import { drawWaveform } from "./waveform";
-import waveformData from "./waveformData";
+import { drawWaveform } from './waveform';
+import waveformData from './waveformData';
 
-drawWaveform(waveformData, document.getElementById('canvas') as HTMLCanvasElement);
+const draw = () => {
+  drawWaveform(waveformData.slice(0, 800), document.getElementById(
+    'canvas'
+  ) as HTMLCanvasElement);
+};
+
+window.onload = () => {
+  window.onresize = draw;
+};
+
+draw();
