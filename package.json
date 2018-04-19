@@ -1,0 +1,16 @@
+{
+  "name": "waveform",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Tom Esterez <testerez@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "parcel index.html"
+  },
+  "dependencies": {
+    "parcel-bundler": "^1.7.1"
+  },
+  "devDependencies": {
+    "typescript": "^2.8.1"
+  }
+}
