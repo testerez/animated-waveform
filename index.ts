@@ -1,14 +1,21 @@
 import { drawWaveform } from './waveform';
 import waveformData from './waveformData';
 
+// waveformData = [1, -1];
+
+const range = document.getElementById('range') as HTMLInputElement;
+range.oninput = () => draw();
+
 const draw = () => {
-  drawWaveform(waveformData.slice(0, 800), document.getElementById(
-    'canvas'
-  ) as HTMLCanvasElement);
+  drawWaveform(
+    waveformData,
+    document.getElementById('canvas') as HTMLCanvasElement,
+    Number(range.value)
+  );
 };
 
 window.onload = () => {
-  window.onresize = draw;
+  window.onresize = () => draw();
 };
 
 draw();

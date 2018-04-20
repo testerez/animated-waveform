@@ -1,4 +1,4 @@
-import { max } from 'lodash';
+import { max, clamp, flow } from 'lodash';
 
 const barWidth = 2;
 const barSpacing = 2;
@@ -27,7 +27,22 @@ export const resample = (data: number[], n: number) => {
   });
 };
 
-export const drawWaveform = (rawData: number[], canvas: HTMLCanvasElement) => {
+const easeInOutCubic = (t: number) =>
+  t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+
+export const getFadeFactor = (t: number, fadeLength = 0.8) => (
+  songPosition: number
+) => {
+  const travelDistance = 1 + fadeLength;
+  const fadeStart = travelDistance * t - fadeLength;
+  return 1 - clamp((songPosition - fadeStart) / fadeLength, 0, 1);
+};
+
+export const drawWaveform = (
+  rawData: number[],
+  canvas: HTMLCanvasElement,
+  animProgess = 1
+) => {
   const canvasWidth = canvas.offsetWidth;
   const canvasHeight = canvas.offsetHeight;
   const ctx = canvas.getContext('2d')!;
@@ -49,6 +64,8 @@ export const drawWaveform = (rawData: number[], canvas: HTMLCanvasElement) => {
   // g.addColorStop(1, colorToString(barBottomColors[1]));
   // ctx.fillStyle = g;
 
+  const getEasedFadeFactor = flow(getFadeFactor(animProgess), easeInOutCubic);
+
   const drawBar = (
     position: number,
     data: number[],
@@ -56,7 +73,9 @@ export const drawWaveform = (rawData: number[], canvas: HTMLCanvasElement) => {
     isBottom: boolean
   ) => {
     const x = barSpacing + position * (barSpacing + barWidth);
-    const h = Math.round(data[position] * maxAmplitude * canvasHeight / 2) + 2;
+    const rawH = data[position] * maxAmplitude * canvasHeight / 2;
+    const h = rawH * getEasedFadeFactor(position / barsCount);
+
     const y = canvasHeight / 2 + (isBottom ? 0 : -h);
     ctx.fillStyle = colorToString(
       mixColors(colors[0], colors[1], position / data.length)
