@@ -1,4 +1,4 @@
-import { max, clamp, flow } from 'lodash';
+import { maxBy, clamp, flow } from 'lodash';
 
 const barWidth = 2;
 const barSpacing = 2;
@@ -22,8 +22,10 @@ export const resample = (data: number[], n: number) => {
   const frameLenght = data.length / n;
   return new Array<number>(n).fill(0).map((_, i) => {
     const start = Math.floor(i * frameLenght);
+    // makes sure we always have at least one value
     const end = Math.max(1, start + Math.round(frameLenght));
-    return max(data.slice(start, end))!;
+    // for each frame take the hiest value (positive of negative)
+    return maxBy(data.slice(start, end), value => Math.abs(value))!;
   });
 };
 
@@ -35,7 +37,7 @@ const easingBackOut = (t: number) => {
   return --t * t * ((s + 1) * t + s) + 1;
 };
 
-export const getFadeFactor = (t: number, waveLength = 0.7) => (
+export const getBarScaleFactor = (t: number, waveLength = 0.7) => (
   songPosition: number
 ) => {
   const travelDistance = 1 + waveLength;
@@ -53,46 +55,33 @@ export const drawWaveform = (
   const ctx = canvas.getContext('2d')!;
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
-  const barsCount = Math.floor(
-    (canvasWidth - barSpacing * 2) / (barWidth + barSpacing)
-  );
-  const dataTop = resample(rawData.filter(v => v >= 0), barsCount);
-  const dataBottom = resample(
-    rawData.filter(v => v <= 0).map(v => -v),
-    barsCount
-  );
 
   ctx.fillStyle = backgroundColor;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-  // var g = ctx.createLinearGradient(0, 0, canvasWidth, 0);
-  // g.addColorStop(0, colorToString(barBottomColors[0]));
-  // g.addColorStop(1, colorToString(barBottomColors[1]));
-  // ctx.fillStyle = g;
 
-  const getEasedFadeFactor = flow(
-    getFadeFactor(easeInOutCubic(t)),
+  const barsCount = Math.floor(
+    (canvasWidth - barSpacing * 2) / (barWidth + barSpacing)
+  );
+
+  const getEasedBarScaleFactor = flow(
+    getBarScaleFactor(easeInOutCubic(t)),
     easingBackOut
   );
 
-  const drawBar = (
-    position: number,
-    data: number[],
-    colors: RgbColor[],
-    isBottom: boolean
-  ) => {
-    const x = barSpacing + position * (barSpacing + barWidth);
-    const rawH = data[position] * maxAmplitude * canvasHeight / 2;
-    const h = rawH * getEasedFadeFactor(position / barsCount);
-
-    const y = canvasHeight / 2 + (isBottom ? 0 : -h);
-    ctx.fillStyle = colorToString(
-      mixColors(colors[0], colors[1], position / data.length)
-    );
+  const drawBar = (i: number, data: number[], colors: RgbColor[]) => {
+    const progress = i / barsCount;
+    const x = barSpacing + i * (barSpacing + barWidth);
+    const rawH = data[i] * maxAmplitude * canvasHeight / 2;
+    const h = rawH * getEasedBarScaleFactor(progress);
+    const y = canvasHeight / 2;
+    ctx.fillStyle = colorToString(mixColors(colors[0], colors[1], progress));
     ctx.fillRect(x, y, barWidth, h);
   };
 
+  const positiveData = resample(rawData.filter(v => v >= 0), barsCount);
+  const negativeData = resample(rawData.filter(v => v <= 0), barsCount);
   for (let i = 0; i < barsCount; i++) {
-    drawBar(i, dataTop, barTopColors, false);
-    drawBar(i, dataBottom, barBottomColors, true);
+    drawBar(i, positiveData, barBottomColors);
+    drawBar(i, negativeData, barTopColors);
   }
 };

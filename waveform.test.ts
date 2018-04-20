@@ -15,6 +15,9 @@ describe('resample', () => {
   it('downsample', () => {
     expect(resample([1, 2, 3, 4], 2)).toEqual([2, 4]);
   });
+  it('downsample negative', () => {
+    expect(resample([1, -2, -3, -4], 2)).toEqual([-2, -4]);
+  });
   it('downsample odd', () => {
     expect(resample([1, 2, 3, 4, 5], 2)).toEqual([3, 5]);
   });
