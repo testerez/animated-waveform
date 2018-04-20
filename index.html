@@ -1,8 +1,19 @@
 <html>
 
 <body>
-  <canvas id="canvas" style="image-rendering: pixelated; height: 150px; width: 100%"></canvas>
-  <input type="range" id="range" style="width: 300px" max="1" step="0.001">
+  <style>
+    #canvas {
+      image-rendering: pixelated;
+      height: 100px;
+      width: 100%
+    }
+
+    #range {
+      width: 300px
+    }
+  </style>
+  <canvas id="canvas"></canvas>
+  <input type="range" id="range" max="1" step="0.001">
   <button id="play">Play animation</button>
   <script src="./index.ts"></script>
 </body>

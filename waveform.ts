@@ -9,7 +9,7 @@ const barTopColors: RgbColor[] = [[207, 168, 84], [152, 98, 20]];
 const barBottomColors: RgbColor[] = [[116, 91, 47], [92, 60, 19]];
 
 const backgroundColor = '#29211A';
-const maxAmplitude = 0.9;
+const maxAmplitude = 0.7;
 
 const colorToString = (c: RgbColor) => `rgb(${c.join(',')})`;
 
@@ -30,18 +30,23 @@ export const resample = (data: number[], n: number) => {
 const easeInOutCubic = (t: number) =>
   t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
 
-export const getFadeFactor = (t: number, fadeLength = 0.8) => (
+const easingBackOut = (t: number) => {
+  var s = 2;
+  return --t * t * ((s + 1) * t + s) + 1;
+};
+
+export const getFadeFactor = (t: number, waveLength = 0.7) => (
   songPosition: number
 ) => {
-  const travelDistance = 1 + fadeLength;
-  const fadeStart = travelDistance * t - fadeLength;
-  return 1 - clamp((songPosition - fadeStart) / fadeLength, 0, 1);
+  const travelDistance = 1 + waveLength;
+  const waveStart = travelDistance * t - waveLength;
+  return 1 - clamp((songPosition - waveStart) / waveLength, 0, 1);
 };
 
 export const drawWaveform = (
   rawData: number[],
   canvas: HTMLCanvasElement,
-  animProgess = 1
+  t = 1
 ) => {
   const canvasWidth = canvas.offsetWidth;
   const canvasHeight = canvas.offsetHeight;
@@ -64,7 +69,10 @@ export const drawWaveform = (
   // g.addColorStop(1, colorToString(barBottomColors[1]));
   // ctx.fillStyle = g;
 
-  const getEasedFadeFactor = flow(getFadeFactor(animProgess), easeInOutCubic);
+  const getEasedFadeFactor = flow(
+    getFadeFactor(easeInOutCubic(t)),
+    easingBackOut
+  );
 
   const drawBar = (
     position: number,

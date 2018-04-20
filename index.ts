@@ -17,7 +17,7 @@ const draw = () => {
 };
 
 let runningAnimation: number;
-const startAnimation = (duration = 500) => {
+const startAnimation = (duration = 800) => {
   if (runningAnimation) {
     cancelAnimationFrame(runningAnimation);
   }
