@@ -23,9 +23,9 @@ export const resample = (data: number[], n: number) => {
   return new Array<number>(n).fill(0).map((_, i) => {
     const start = Math.floor(i * frameLenght);
     // makes sure we always have at least one value
-    const end = Math.max(1, start + Math.round(frameLenght));
+    const end = start + Math.max(1, Math.round(frameLenght));
     // for each frame take the hiest value (positive of negative)
-    return maxBy(data.slice(start, end), value => Math.abs(value))!;
+    return maxBy(data.slice(start, end), value => Math.abs(value)) || 0;
   });
 };
 

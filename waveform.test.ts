@@ -24,4 +24,7 @@ describe('resample', () => {
   it('upscale', () => {
     expect(resample([1], 2)).toEqual([1, 1]);
   });
+  it('empty', () => {
+    expect(resample([], 2)).toEqual([0, 0]);
+  });
 });
